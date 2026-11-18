@@ -14,9 +14,12 @@ class Store:
         self._tables: dict[str, list[dict[str, Any]]] = {
             name: [dict(row) for row in rows] for name, rows in SEED_ROWS.items()
         }
+        # 合并批次台账由分支合并动作写入，初始为空，不参与概览统计。
+        self._tables.setdefault("_branch_merge", [])
 
     def module_names(self) -> list[str]:
-        return sorted(self._tables)
+        # 下划线开头的是分支合并流程内部使用的辅助台账，不进入业务模块概览。
+        return sorted(name for name in self._tables if not name.startswith("_"))
 
     def rows(self, module: str) -> list[dict[str, Any]]:
         return self._tables.setdefault(module, [])
